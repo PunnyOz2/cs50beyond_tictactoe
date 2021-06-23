@@ -1,0 +1,142 @@
+from flask import Flask, render_template, session, redirect, url_for
+from flask.helpers import url_for
+from flask_session import Session
+from tempfile import mkdtemp
+import math
+
+app = Flask(__name__)
+
+app.config["SESSION_FILE_DIR"] = mkdtemp()
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+cou = 0
+win = None
+
+@app.route("/")
+def index():
+
+    if "board" not in session:
+        session["board"] = [[None, None, None], 
+                            [None, None, None],
+                            [None, None, None]]
+        session["turn"] = "X"
+        global cou
+        cou = 0
+    
+    global win
+    if win:
+        return render_template("game.html", game=session["board"], turn=session["turn"], extra=win)
+    
+    return render_template("game.html", game=session["board"], turn=session["turn"])
+
+def checkwin(row,col):
+    for i in range(3):
+        if session["board"][row][i] != session["board"][row][col]:
+            break
+        if i == 2:
+            return 1
+
+    for i in range(3):
+        if session["board"][i][col] != session["board"][row][col]:
+            break
+        if i == 2:
+            return 1
+
+    if row == col:
+        for i in range(3):
+            if session["board"][i][i] != session["board"][row][col]:
+                break
+            if i == 2:
+                return 1
+    
+    if row + col == 2:
+        for i in range(3):
+            if session["board"][i][2-i] != session["board"][row][col]:
+                break
+            if i == 2:
+                return 1
+
+    if cou == 9:
+        return 0
+
+@app.route("/play/<int:row>/<int:col>")
+def play(row, col):
+    global cou
+    global win
+    cou += 1
+    session["board"][row][col] = session["turn"]
+    ch = checkwin(row,col)
+    if ch == 1:
+        win = f'{session["turn"]} wins!'
+    if ch == 0:
+        win = "Draw!"
+    if session["turn"] == 'X':
+        session["turn"] = 'O'
+    else:
+        session["turn"] = 'X'
+    
+    return redirect("/")
+
+@app.route("/botplay")
+def botplay():
+
+    ans = minimax(session["turn"],session["board"],None,None)
+    print(ans)
+    if ans[1] is not None:
+        return redirect(url_for('play', row=ans[1][0], col=ans[1][1]))
+
+def minimax(player, board, lasti, lastj):
+
+    try:
+        ans = checkwin(lasti,lastj)
+    except: # lasti lastj == None
+        ans = None
+    if ans == 1 and player == "X":
+        return (-1,None)
+    elif ans == 1 and player == "O":
+        return (1,None)
+    elif ans == 0:
+        return (0,None)
+    else:
+        possible=[]
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == None:
+                    possible.append((i, j))
+        if not possible:
+            return (0,None)
+        if player == 'X':
+            value = -2
+            for i,j in possible:
+                board[i][j] = 'X'
+                result = minimax('O', board, i, j)[0]
+                if value < result:
+                    value = result
+                    step = (i,j)
+                board[i][j] = None
+        elif player == 'O':
+            value = 2
+            for i,j in possible:
+                board[i][j] = 'O'
+                result = minimax('X', board, i, j)[0]
+                if value > result:
+                    value = result
+                    step = (i,j)
+                board[i][j] = None
+                
+        return (value, step)
+
+
+@app.route("/clear")
+def clear():
+    session["board"] = [[None, None, None], 
+                        [None, None, None],
+                        [None, None, None]]
+    session["turn"] = "X"
+    global cou
+    cou = 0
+    global win
+    win = None
+    return redirect("/")

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tic Tac Toe</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            table {
+                border-collapse: collapse;
+                background-color: cornsilk;
+            }
+            td {
+                border: 1px solid black;
+                border-style: solid;
+                border-width: 5px;
+                width: 20vmin;
+                height: 20vmin;
+                font-size: 30px;
+                text-align: center;
+            }
+            td > a {
+                font-size: 1em;
+                text-decoration: none;
+                color:cadetblue;
+            }
+            td > a:visited {
+                color: cadetblue;
+            }
+            h1 {
+                text-align: center;
+            }
+            td > p {
+                font-size: 1em;
+                text-decoration: none;
+                color:cadetblue;
+            }
+            .centered {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            body {
+                background-image: linear-gradient(to right top, #051937, #004d7a, #008793, #00bf72, #a8eb12);
+                height: 100vh;
+                padding-top: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="jumbotron">
+                {% if extra %}
+                    <h1>{{extra}}</h1>
+                {% else %}
+                    <h1>Tic Tac Toe</h1>
+                {% endif %}
+            </div>
+        </div>
+        <table style="margin: 0px auto;">
+            {% for i in range(3) %}
+                <tr>
+                    {% for j in range(3) %}
+                        <td>
+                            {% if game[i][j] %}
+                                {{game[i][j]}}
+                            {% else %}
+                                {% if extra %}
+                                    <a href="{{ url_for('play', row=i, col=j) }}" style="pointer-events: none;">Play {{turn}} here.</a>
+                                {% else %}
+                                    <a href="{{ url_for('play', row=i, col=j) }}">Play {{turn}} here.</a>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        <div class="centered">
+            <a href="/clear" class="btn btn-primary btn-lg" style="margin-top: 15px;margin-right: 10px;">Clear</a>
+            <a href="/botplay" class="btn btn-primary btn-lg" style="margin-top: 15px;">Let bot decide</a>
+        </div>
+    </body>
+</html>
