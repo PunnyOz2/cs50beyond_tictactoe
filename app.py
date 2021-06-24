@@ -82,50 +82,51 @@ def play(row, col):
 def botplay():
     if session["win"]:
         return redirect("/")
-    ans = minimax(session["turn"],session["board"],None,None)
+    ans = minimax(session["turn"],session["board"])
     if ans[1] is not None:
         return redirect(url_for('play', row=ans[1][0], col=ans[1][1]))
 
-def minimax(player, board, lasti, lastj):
+def minimax(player, board):
 
-    try:
-        ans = checkwin(lasti,lastj)
-    except: # lasti lastj == None
-        ans = None
-    if ans == 1 and player == "X":
-        return (-1,None)
-    elif ans == 1 and player == "O":
-        return (1,None)
-    elif ans == 0:
+    possible=[]
+    for i in range(3):
+        for j in range(3):
+            if board[i][j] == None:
+                possible.append((i, j))
+    if not possible:
         return (0,None)
-    else:
-        possible=[]
-        for i in range(3):
-            for j in range(3):
-                if board[i][j] == None:
-                    possible.append((i, j))
-        if not possible:
-            return (0,None)
-        if player == 'X':
-            value = -2
-            for i,j in possible:
-                board[i][j] = 'X'
-                result = minimax('O', board, i, j)[0]
-                if value < result:
-                    value = result
-                    step = (i,j)
-                board[i][j] = None
-        elif player == 'O':
-            value = 2
-            for i,j in possible:
-                board[i][j] = 'O'
-                result = minimax('X', board, i, j)[0]
-                if value > result:
-                    value = result
-                    step = (i,j)
-                board[i][j] = None
-                
-        return (value, step)
+    if player == 'X':
+        value = -2
+        for i,j in possible:
+            board[i][j] = 'X'
+            ans = checkwin(i,j)
+            if ans == 1:
+                result = 1
+            elif ans == 0:
+                result = 0
+            else :
+                result = minimax('O', board)[0]
+            if value < result:
+                value = result
+                step = (i,j)
+            board[i][j] = None
+    elif player == 'O':
+        value = 2
+        for i,j in possible:
+            board[i][j] = 'O'
+            ans = checkwin(i,j)
+            if ans == 1:
+                result = -1
+            elif ans == 0:
+                result = 0
+            else :
+                result = minimax('X', board)[0]
+            if value > result:
+                value = result
+                step = (i,j)
+            board[i][j] = None
+            
+    return (value, step)
 
 
 @app.route("/clear")
