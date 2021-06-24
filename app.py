@@ -1,10 +1,9 @@
 from flask import Flask, render_template, session, redirect, url_for
-from flask.helpers import url_for
 from flask_session import Session
 from tempfile import mkdtemp
-import math
 
 app = Flask(__name__)
+app.secret_key = 'HiTherePun'
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -81,7 +80,9 @@ def play(row, col):
 
 @app.route("/botplay")
 def botplay():
-
+    global win
+    if win:
+        return redirect("/")
     ans = minimax(session["turn"],session["board"],None,None)
     print(ans)
     if ans[1] is not None:
