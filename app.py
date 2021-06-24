@@ -95,6 +95,7 @@ def minimax(player, board):
                 possible.append((i, j))
     if not possible:
         return (0,None)
+    if len(possible) == 9: return (0,(0,0))
     if player == 'X':
         value = -2
         for i,j in possible:
