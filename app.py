@@ -10,9 +10,6 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-cou = 0
-win = None
-
 @app.route("/")
 def index():
 
@@ -21,12 +18,10 @@ def index():
                             [None, None, None],
                             [None, None, None]]
         session["turn"] = "X"
-        global cou
-        cou = 0
+        session["win"] = None
     
-    global win
-    if win:
-        return render_template("game.html", game=session["board"], turn=session["turn"], extra=win)
+    if session["win"]:
+        return render_template("game.html", game=session["board"], turn=session["turn"], extra=session["win"])
     
     return render_template("game.html", game=session["board"], turn=session["turn"])
 
@@ -57,20 +52,22 @@ def checkwin(row,col):
             if i == 2:
                 return 1
 
-    if cou == 9:
+    cou = 0
+    for i in range(3):
+        for j in range(3):
+            if session["board"][i][j] == None:
+                cou += 1
+    if cou == 0:
         return 0
 
 @app.route("/play/<int:row>/<int:col>")
 def play(row, col):
-    global cou
-    global win
-    cou += 1
     session["board"][row][col] = session["turn"]
     ch = checkwin(row,col)
     if ch == 1:
-        win = f'{session["turn"]} wins!'
+        session["win"] = f'{session["turn"]} wins!'
     if ch == 0:
-        win = "Draw!"
+        session["win"] = "Draw!"
     if session["turn"] == 'X':
         session["turn"] = 'O'
     else:
@@ -80,8 +77,7 @@ def play(row, col):
 
 @app.route("/botplay")
 def botplay():
-    global win
-    if win:
+    if session["win"]:
         return redirect("/")
     ans = minimax(session["turn"],session["board"],None,None)
     print(ans)
@@ -136,8 +132,5 @@ def clear():
                         [None, None, None],
                         [None, None, None]]
     session["turn"] = "X"
-    global cou
-    cou = 0
-    global win
-    win = None
+    session["win"] = None
     return redirect("/")
