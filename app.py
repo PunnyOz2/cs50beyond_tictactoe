@@ -83,7 +83,6 @@ def botplay():
     if session["win"]:
         return redirect("/")
     ans = minimax(session["turn"],session["board"],None,None)
-    print(ans)
     if ans[1] is not None:
         return redirect(url_for('play', row=ans[1][0], col=ans[1][1]))
 
@@ -137,3 +136,7 @@ def clear():
     session["turn"] = "X"
     session["win"] = None
     return redirect("/")
+
+if __name__ == '__main__':
+    app.debug = True
+    app.run()
